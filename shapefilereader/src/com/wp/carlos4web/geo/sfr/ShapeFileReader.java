@@ -141,13 +141,8 @@ public class ShapeFileReader<T>
 			} catch (FeatureException e) {
 				e.printStackTrace();
 				break;
-			} catch (InstantiationException e) {
-				e.printStackTrace();
-				break;
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-				break;
 			}
+			break;
 		}
 		
 		return result;

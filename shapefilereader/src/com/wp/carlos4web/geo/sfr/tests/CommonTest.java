@@ -25,7 +25,7 @@ public class CommonTest
 			definitions.put("LEVEL_4_NA", 	"name");
 			definitions.put("the_geom", 	"limit");
 			
-			definitions.put("the_geom", 	"country.limit");
+			//definitions.put("the_geom", 	"country.limit");
 			definitions.put("LEVEL_NAME", 	"country.name");
 			definitions.put("ISO_CODE", 	"country.code");
 			
@@ -41,11 +41,12 @@ public class CommonTest
 				{
 					assertNotNull(estado);
 					
-					assertNotNull(estado.getCountry());
+					//assertNotNull(estado.getCountry());
 					
+					System.out.println("State limit: " + estado.getLimit());
 					System.out.println("State code: " + estado.getCode());
 					System.out.println("State name: " + estado.getName());
-					System.out.println("Country name: " + estado.getCountry().getName());
+					System.out.println("Country: " + estado.getCountry().getName() + " CODE: " + estado.getCountry().getCode());
 					break;
 				}
 				System.out.println(estados.size() + " states imported from shapefile.");

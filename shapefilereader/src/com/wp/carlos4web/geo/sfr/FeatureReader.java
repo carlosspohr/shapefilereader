@@ -9,6 +9,7 @@ import net.vidageek.mirror.dsl.Mirror;
 
 import org.opengis.feature.simple.SimpleFeature;
 
+import com.vividsolutions.jts.geom.Geometry;
 import com.wp.carlos4web.geo.sfr.exceptions.FeatureException;
 import com.wp.carlos4web.geo.sfr.util.FeatureUtil;
 
@@ -24,8 +25,6 @@ public class FeatureReader<T> implements Serializable
 	
 	private Definition 	definition;
 	
-	private FeatureUtil util;
-	
 	private Class<T>	targetClass;
 	
 	public FeatureReader(Definition definition, Class<T> targetClass)
@@ -34,7 +33,6 @@ public class FeatureReader<T> implements Serializable
 		
 		this.definition 	= definition;
 		this.targetClass 	= targetClass;
-		this.util			= new FeatureUtil();
 	}
 	
 	/**
@@ -43,7 +41,7 @@ public class FeatureReader<T> implements Serializable
 	 * 
 	 * @param feature - an single tuple of shapefile.
 	 * 
-	 * @param precisionModel - the projection code, e.g: 4326, 900913..
+	 * @param srid - the projection code, e.g: 4326, 900913..
 	 * 
 	 * @return T - the populated target class object.
 	 * 
@@ -53,78 +51,58 @@ public class FeatureReader<T> implements Serializable
 	 * 
 	 * @throws IllegalAccessException - throws when reflection errors occurs
 	 */
-	private T readFeature (SimpleFeature feature, int precisionModel) throws FeatureException, InstantiationException, IllegalAccessException
+	private T readFeature (SimpleFeature feature, int srid)
 	{
 		Iterator<Entry<String, String>> definitions = this.getDefinition().getIteratorDefinitions();
 		
 		// Creates an new instance of target class.
 		Class<T> clazz = this.targetClass;
+		
+		Mirror mirror = new Mirror();
+		
 		T object = new Mirror().on(clazz).invoke().constructor().bypasser();
 		
-		// Setting values based in definitions.
 		while (definitions.hasNext())
 		{
 			Entry<String, String> entry = (Entry<String, String>) definitions.next();
 			
-			if(FeatureUtil.hasValue(feature, entry.getKey()))
+			if(!FeatureUtil.hasValue(feature, entry.getKey()))
 			{
 				continue;
 			}
 			
 			Object value = FeatureUtil.getValue(feature, entry.getKey());
 			
-			try
+			if(!FeatureUtil.hasRule(entry.getValue()))
 			{
-				Object attributeValue;
-				Field atributo;
+				mirror.on(object).set().field(entry.getValue()).withValue(value);
 				
-				if(FeatureUtil.hasRule(entry.getValue()))
+				if(mirror.on(object.getClass()).reflect().field(entry.getValue()).getType().equals(Geometry.class))
 				{
-					atributo = this.getUtil().getRuledField(object, entry.getValue());
+					Geometry geo = (Geometry) mirror.on(object).get().field(entry.getValue());
+					geo.setSRID(srid);
+					mirror.on(object).set().field(entry.getValue()).withValue(geo);
 				}
-				else
-				{
-					atributo = this.getUtil().getField(object, entry.getValue());
-				}
+			}
+			else
+			{
+				String[] split = entry.getValue().split("\\.");
 				
-				// Libera acesso ao atributo.
-				atributo.setAccessible(true);
-				
-				if(FeatureUtil.hasRule(entry.getValue()))
+				if(mirror.on(object).get().field(split[0]) == null)
 				{
-					attributeValue = atributo.get(object);
+					Field field = mirror.on(object.getClass()).reflect().field(split[0]);
 					
-					if(attributeValue == null)
-					{
-						attributeValue = atributo.getType().newInstance();
-					}
-					
-					Field recursiveAttribute = this.getUtil().getRuledAttributeField(attributeValue, entry.getValue());
-					
-					recursiveAttribute.setAccessible(true);
-					recursiveAttribute.set(attributeValue, this.getUtil().getParsedValue(value, recursiveAttribute));
-				}
-				else
-				{
-					attributeValue = this.getUtil().getParsedValue(value, atributo);
+					mirror.on(object).set().field(split[0]).withValue(
+						mirror.on(field.getType()).invoke().constructor().bypasser()
+					);
 				}
 				
-				// Seta os dados no objeto principal.
-				atributo.set(object, attributeValue);
-				
-			} catch (SecurityException e) {
-				e.printStackTrace();
-			} catch (NoSuchFieldException e) {
-				e.printStackTrace();
-			} catch (Exception e) {
-				e.printStackTrace();
+				// With a correct instance of class field type, fill with data ;)
+				Object instance = mirror.on(object).get().field(split[0]);
+				mirror.on(instance).set().field(split[1]).withValue(value);
 			}
 		}
 		
-		if(object != null)
-		{
-			this.getUtil().setGeometrySRID(object, precisionModel);
-		}
 		return (T) object;
 	}
 	
@@ -142,7 +120,7 @@ public class FeatureReader<T> implements Serializable
 	 * 
 	 * @throws IllegalAccessException - throws when reflection errors occurs
 	 */
-	public T getObject (SimpleFeature feature) throws FeatureException, InstantiationException, IllegalAccessException
+	public T getObject (SimpleFeature feature) throws FeatureException
 	{
 		return this.readFeature(feature, -1);
 	}
@@ -163,7 +141,7 @@ public class FeatureReader<T> implements Serializable
 	 * 
 	 * @throws IllegalAccessException - throws when reflection errors occurs
 	 */
-	public T getObject (SimpleFeature feature, int precisionModel) throws FeatureException, InstantiationException, IllegalAccessException
+	public T getObject (SimpleFeature feature, int precisionModel) throws FeatureException
 	{
 		return this.readFeature(feature, precisionModel);
 	}
@@ -171,17 +149,5 @@ public class FeatureReader<T> implements Serializable
 	public Definition getDefinition()
 	{
 		return definition;
-	}
-
-	public FeatureUtil getUtil() {
-		return util;
-	}
-
-	public void setUtil(FeatureUtil util) {
-		this.util = util;
-	}
-
-	public void setDefinition(Definition definition) {
-		this.definition = definition;
 	}
 }

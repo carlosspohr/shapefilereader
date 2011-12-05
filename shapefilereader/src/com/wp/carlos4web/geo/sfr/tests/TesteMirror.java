@@ -22,5 +22,7 @@ public class TesteMirror {
 		
 		
 		System.out.println(new Mirror().on(s).get().field("country"));
+		
+		
 	}
 }
