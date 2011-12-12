@@ -1,8 +1,10 @@
-package com.wp.carlos4web.geo.sfr;
+package com.wp.carlos4web.geo.sfr.definitions;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+
 
 /**
  * <p>This class contains the programatic definition to link shapefile attributes to 
@@ -16,32 +18,38 @@ import java.util.Map.Entry;
  */
 public class Definition
 {
-	private Map<String, String> definitions;
-
-	public Definition(Map<String, String> definitions)
-	{
-		super();
-		
-		this.definitions = definitions;
-	}
+	private Map<String, String> definitions = new HashMap<String, String>();
+	
+	private int precisionModel = 4326;
 
 	public Definition()
 	{
 		super();
 	}
 	
+	public Definition(int precisionModel)
+	{
+		super();
+		this.precisionModel = precisionModel;
+	}
+	
+	public From from (String column)
+	{
+		return new From(column, this);
+	}
+	
 	/**
 	 * Add an link between the shapefile and target class attribute.
 	 * 
-	 * @param shapeKey - Name of shapefile column
+	 * @param attributeTarget - Name of shapefile column
 	 * 
-	 * @param targetClassAttribute - the name of target class attribute.
+	 * @param shapeColumn - the name of target class attribute.
 	 * 
 	 * @return
 	 */
-	public Definition add(String shapeKey, String targetClassAttribute)
+	public Definition add(String attributeTarget, String shapeColumn)
 	{
-		this.getDefinicoes().put(shapeKey, targetClassAttribute);
+		this.getDefinicoes().put(attributeTarget, shapeColumn);
 		
 		return this;
 	}
@@ -58,5 +66,13 @@ public class Definition
 
 	public Map<String, String> getDefinicoes() {
 		return definitions;
+	}
+
+	public int getPrecisionModel() {
+		return precisionModel;
+	}
+
+	public void setPrecisionModel(int precisionModel) {
+		this.precisionModel = precisionModel;
 	}
 }

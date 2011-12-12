@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 
 import org.geotools.data.FeatureSource;
 import org.geotools.data.FileDataStore;
@@ -13,7 +12,7 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.FeatureCollection;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.wp.carlos4web.geo.sfr.exceptions.EmptyDefinitionMapException;
+import com.wp.carlos4web.geo.sfr.definitions.Definition;
 import com.wp.carlos4web.geo.sfr.exceptions.FeatureException;
 
 /**
@@ -32,20 +31,6 @@ public class ShapeFileReader<T>
 	
 	private SimpleFeatureIterator simpleFeatureIterator;
 	
-	private int 		srid = 4326;
-	
-	public ShapeFileReader(Class<T> targetClass, File shapeFile, Definition definition, int srid) throws IOException, NullPointerException
-	{
-		super();
-		
-		this.targetClass 	= targetClass;
-		this.shapefile 		= shapeFile;
-		this.definition 	= definition;
-		this.srid 			= srid;
-		
-		this.init();
-	}
-	
 	public ShapeFileReader(Class<T> targetClass, File shapeFile, Definition definition) throws IOException, NullPointerException
 	{
 		super();
@@ -53,37 +38,6 @@ public class ShapeFileReader<T>
 		this.targetClass 	= targetClass;
 		this.shapefile 		= shapeFile;
 		this.definition 	= definition;
-		
-		this.init();
-	}
-	
-	public ShapeFileReader(Class<T> targetClass, File shapeFile, Map<String, String> definitions) throws IOException, NullPointerException, EmptyDefinitionMapException
-	{
-		super();
-		this.targetClass 	= targetClass;
-		this.shapefile 		= shapeFile;
-		
-		if(definitions == null)
-		{
-			throw new EmptyDefinitionMapException("No definition was specified.");
-		}
-		this.definition 	= new Definition(definitions);
-		
-		this.init();
-	}
-	
-	public ShapeFileReader(Class<T> targetClass, File shapeFile, Map<String, String> definitions, int srid) throws IOException, NullPointerException, EmptyDefinitionMapException
-	{
-		super();
-		this.targetClass 	= targetClass;
-		this.shapefile 		= shapeFile;
-		this.srid			= srid;
-		
-		if(definitions == null)
-		{
-			throw new EmptyDefinitionMapException("No definition was specified.");
-		}
-		this.definition 	= new Definition(definitions);
 		
 		this.init();
 	}
@@ -112,11 +66,6 @@ public class ShapeFileReader<T>
 		FeatureCollection<?, ?> collection 	= source.getFeatures();
 		
 		this.simpleFeatureIterator 		= (SimpleFeatureIterator) collection.features();
-		
-		if(srid <= 0)
-		{
-			this.srid = 4326;
-		}
 	}
 	
 	/**
@@ -136,13 +85,12 @@ public class ShapeFileReader<T>
 			
 			try
 			{
-				T object = (T) reader.getObject(feature, this.getSrid());
+				T object = (T) reader.getObject(feature, this.getDefinition().getPrecisionModel());
 				result.add(object);
 			} catch (FeatureException e) {
 				e.printStackTrace();
 				break;
 			}
-			break;
 		}
 		
 		return result;
@@ -158,9 +106,5 @@ public class ShapeFileReader<T>
 
 	public SimpleFeatureIterator getSimpleFeatureIterator() {
 		return simpleFeatureIterator;
-	}
-	
-	public int getSrid() {
-		return srid;
 	}
 }

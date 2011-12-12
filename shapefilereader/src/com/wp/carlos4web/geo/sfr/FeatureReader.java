@@ -10,6 +10,7 @@ import net.vidageek.mirror.dsl.Mirror;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.wp.carlos4web.geo.sfr.definitions.Definition;
 import com.wp.carlos4web.geo.sfr.exceptions.FeatureException;
 import com.wp.carlos4web.geo.sfr.util.FeatureUtil;
 
@@ -66,27 +67,27 @@ public class FeatureReader<T> implements Serializable
 		{
 			Entry<String, String> entry = (Entry<String, String>) definitions.next();
 			
-			if(!FeatureUtil.hasValue(feature, entry.getKey()))
+			if(!FeatureUtil.hasValueInFeatureColumn(feature, entry.getValue()))
 			{
 				continue;
 			}
 			
-			Object value = FeatureUtil.getValue(feature, entry.getKey());
+			Object value = FeatureUtil.getValueOfFeatureColumn(feature, entry.getValue());
 			
-			if(!FeatureUtil.hasRule(entry.getValue()))
+			if(!FeatureUtil.hasRule(entry.getKey()))
 			{
-				mirror.on(object).set().field(entry.getValue()).withValue(value);
+				mirror.on(object).set().field(entry.getKey()).withValue(value);
 				
-				if(mirror.on(object.getClass()).reflect().field(entry.getValue()).getType().equals(Geometry.class))
+				if(mirror.on(object.getClass()).reflect().field(entry.getKey()).getType().equals(Geometry.class))
 				{
-					Geometry geo = (Geometry) mirror.on(object).get().field(entry.getValue());
+					Geometry geo = (Geometry) mirror.on(object).get().field(entry.getKey());
 					geo.setSRID(srid);
-					mirror.on(object).set().field(entry.getValue()).withValue(geo);
+					mirror.on(object).set().field(entry.getKey()).withValue(geo);
 				}
 			}
 			else
 			{
-				String[] split = entry.getValue().split("\\.");
+				String[] split = entry.getKey().split("\\.");
 				
 				if(mirror.on(object).get().field(split[0]) == null)
 				{

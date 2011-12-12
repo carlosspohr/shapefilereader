@@ -42,14 +42,14 @@ public class FeatureUtil
 	 * 
 	 * @return
 	 */
-	public static boolean hasValue(SimpleFeature feature, String column)
+	public static boolean hasValueInFeatureColumn(SimpleFeature feature, String column)
 	{
 		return feature != null && feature.getAttribute(column) != null;
 	}
 	
-	public static Object getValue(SimpleFeature feature, String column)
+	public static Object getValueOfFeatureColumn(SimpleFeature feature, String column)
 	{
-		if(hasValue(feature, column))
+		if(hasValueInFeatureColumn(feature, column))
 		{
 			return feature.getAttribute(column);
 		}
