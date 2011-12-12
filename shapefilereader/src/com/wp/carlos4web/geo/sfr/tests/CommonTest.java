@@ -24,12 +24,13 @@ public class CommonTest
 				.and()
 				.from("the_geom").to(new String[]{"limit", "country.limit"})
 				.and()
-				.from("ISO_CODE").to("country.code")
+				.from("ISO_CODEs").to("country.code")
 				.and()
 				.from("LEVEL_NAME").to("country.name");
 			
 			File shapefile = new File(pathname);
 			ShapeFileReader<State> reader = new ShapeFileReader<State>(State.class, shapefile, def);
+			
 			
 			Collection<State> estados = reader.getRecords();
 			
@@ -37,10 +38,11 @@ public class CommonTest
 			{
 				for (State estado : estados)
 				{
-					System.out.println("State limit: " + estado.getLimit());
 					System.out.println("State code: " + estado.getCode());
 					System.out.println("State name: " + estado.getName());
 					System.out.println("Country: " + estado.getCountry().getName() + " CODE: " + estado.getCountry().getCode());
+					
+					break;
 				}
 				System.out.println(estados.size() + " states imported from shapefile.");
 			}
