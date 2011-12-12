@@ -15,8 +15,6 @@ public class TesteMirror {
 		try
 		{
 			ShapeFileReader<State> reader = new ShapeFileReader<State>(State.class, null, null);
-			
-			
 		} catch (NullPointerException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
