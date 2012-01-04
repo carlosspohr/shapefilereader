@@ -71,8 +71,4 @@ public class Definition
 	public int getPrecisionModel() {
 		return precisionModel;
 	}
-
-	public void setPrecisionModel(int precisionModel) {
-		this.precisionModel = precisionModel;
-	}
 }

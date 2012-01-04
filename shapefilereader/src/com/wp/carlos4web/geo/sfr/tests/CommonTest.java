@@ -32,11 +32,11 @@ public class CommonTest
 			ShapeFileReader<State> reader = new ShapeFileReader<State>(State.class, shapefile, def);
 			
 			
-			Collection<State> estados = reader.getRecords();
+			Collection<State> states = reader.getRecords();
 			
-			if (estados != null && !estados.isEmpty())
+			if (states != null && !states.isEmpty())
 			{
-				for (State estado : estados)
+				for (State estado : states)
 				{
 					System.out.println("State code: " + estado.getCode());
 					System.out.println("State name: " + estado.getName());
@@ -44,7 +44,7 @@ public class CommonTest
 					
 					break;
 				}
-				System.out.println(estados.size() + " states imported from shapefile.");
+				System.out.println(states.size() + " states imported from shapefile.");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
